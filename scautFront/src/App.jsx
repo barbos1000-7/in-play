@@ -1,0 +1,124 @@
+import {useEffect, useState} from "react";
+import "./App.css";
+import AdminPanel from "./components/Admin/AdminPanel";
+import Item from "./components/Item/Item";
+import Header from "./components/Header/Header";
+import AuthForm from "./components/Auth/AuthForm";
+import AuthAdmin from "./components/AuthAdmin/AuthAdmin";
+import convert from 'xml-js';
+
+const convertTime12to24 = (time12h) => {
+
+    const [time, modifier] = time12h.split(' ');
+
+    let [hours, minutes] = time.split(':');
+
+    if (hours === '12') {
+        hours = '00';
+    }
+
+    if (modifier === 'PM') {
+        hours = parseInt(hours, 10) + 12;
+    }
+
+    return `${hours}:${minutes}`;
+}
+const App = () => {
+    const [auth, setAuth] = useState(false);
+    const [clicked, setClicked] = useState(false);
+    const [admin, setAdmin] = useState(false);
+    const [items, setItems] = useState([])
+
+    const check = (boolean) => {
+        setClicked(boolean);
+    };
+
+    const checkLogin = async (login, password) => {
+        const response = await fetch("http://localhost:3000");
+        const users = await response.json();
+        const isAuthenticated = users.find(user => user.title === login && user.description === password);
+        console.log(isAuthenticated, 'user')
+        localStorage.setItem('id', isAuthenticated.id)
+        setAuth(!!isAuthenticated);
+    };
+
+    const checkAdmin = (login, password) => {
+        setAdmin(login === "admin01" && password === "Vfrcvfrc123!45!");
+    };
+
+    useEffect(() => {
+        fetch("/xml.xml")
+            .then(res => res.text())
+            .then(data => {
+                const xml = JSON.parse(convert.xml2json(data, {compact: true, spaces: 4}));
+                const time = new Date().toLocaleTimeString('ru-RU', {timeZone: 'Europe/Moscow'}).split(':')
+                const data4 = new Date().toLocaleDateString('ru-RU', {timeZone: 'Europe/Moscow'}).split('.')
+                const trueData = new Date(data4[2], data4[1] - 1, data4[0], time[0], time[1]).getTime()
+
+                setItems(xml.schedule.events.event.map(item => {
+                    let data2 = item.startDate._text.split(' ')[0].split('/')
+                    let time2 = (convertTime12to24(item.startDate._text.split(' ')[1] + ' ' + item.startDate._text.split(' ')[2])).split(':')
+                    const trueData2 = new Date(data2[2], data2[0]-1, data2[1], time2[0], time2[1]).getTime()
+                    const diff = Math.ceil(((trueData - trueData2) / (1000 * 3600 * 24))*24*10)
+                    if (diff > 21) {
+                        return undefined
+                    }
+                    else if (diff > 0) {
+                        return {...item, live: true}
+                    }
+                    else return item
+                }).filter(a => !!a))
+            })
+            .catch(err => console.log(err));
+    }, [])
+    const [min, setMin] = useState()
+
+    useEffect(() => {
+
+        if (items[0]) {
+            setItems(items.map(item => {
+                let data2 = item.startDate._text.split(' ')[0].split('/')
+                let time2 = (convertTime12to24(item.startDate._text.split(' ')[1] + ' ' + item.startDate._text.split(' ')[2])).split(':')
+                const trueData2 = new Date(data2[2], data2[0]-1, data2[1], time2[0], time2[1]).getTime()
+                const diff = Math.ceil(((trueData - trueData2) / (1000 * 3600 * 24))*24*10)
+                if (diff > 21) {
+                    return undefined
+                }
+                else if (diff > 0) {
+                    return {...item, live: true}
+                }
+                else return item
+            }).filter(a => !!a))
+        }
+    }, [])
+
+    useEffect(() => {
+        fetch(`http://localhost:3000/minutes/${localStorage.getItem('id')}`)
+            .then(res => res.text())
+            .then(data => {
+                console.log(data)
+                setMin(JSON.parse(data).minutes)
+            })
+            .catch(err => console.log(err));
+    }, [auth])
+
+    return (
+        <>
+            <Header check={check}/>
+            {auth ? <>
+                {
+                    items[0] ? items.map(e => <Item key={e.eventId._text} item={e}/>) : <div></div>
+                }
+            </> : <AuthForm checkLogin={checkLogin}/>}
+            {clicked ? (
+                admin ? (
+                    <AdminPanel/>
+                ) : (
+                    <AuthAdmin checkAdmin={checkAdmin}/>
+                )
+            ) : null}
+        </>
+    );
+};
+
+export default App;

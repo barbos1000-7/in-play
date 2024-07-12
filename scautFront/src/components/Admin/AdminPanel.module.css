@@ -1,0 +1,65 @@
+.form {
+  border: 1px solid rgb(149, 149, 149);
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  justify-content: center;
+  background-color: rgb(249, 249, 249);
+}
+
+.login,
+.password {
+  margin: 0 0;
+  padding: 5px 50px;
+  border: 1px solid rgb(149, 149, 149);
+  border-radius: 5px;
+}
+
+.auth {
+  margin-top: 35px;
+  padding: 10px 65px;
+  border: 1px solid rgb(149, 149, 149);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 40px;
+}
+
+.auth:hover {
+  background-color: green;
+}
+
+.list {
+  margin: 20px;
+}
+
+.ullist {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  list-style: none;
+  flex-wrap: wrap;
+}
+
+.items {
+  border: 1px solid rgb(209, 209, 209);
+  margin: 20px;
+  padding: 5px;
+  border-radius: 20px;
+  height: 330px;
+  color: red;
+}
+
+.deletebtn {
+  padding: 10px 20px;
+  border: 1px solid rgb(149, 149, 149);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.deletebtn:hover {
+  background-color: red;
+}

@@ -1,11 +1,11 @@
 import {useEffect, useState} from "react";
 import "./App.css";
-import AdminPanel from "./components/Admin/AdminPanel";
-import Item from "./components/Item/Item";
 import Header from "./components/Header/Header";
 import AuthForm from "./components/Auth/AuthForm";
-import AuthAdmin from "./components/AuthAdmin/AuthAdmin";
 import convert from 'xml-js';
+import {ToastContainer} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import Content from "./components/Content/Content.jsx";
 
 const convertTime12to24 = (time12h) => {
 
@@ -25,26 +25,21 @@ const convertTime12to24 = (time12h) => {
 }
 const App = () => {
     const [auth, setAuth] = useState(false);
-    const [clicked, setClicked] = useState(false);
-    const [admin, setAdmin] = useState(false);
     const [items, setItems] = useState([])
 
-    const check = (boolean) => {
-        setClicked(boolean);
-    };
+
 
     const checkLogin = async (login, password) => {
-        const response = await fetch("http://localhost:3000");
+        const response = await fetch("https://gemetalkued.beget.app");
         const users = await response.json();
         const isAuthenticated = users.find(user => user.title === login && user.description === password);
         console.log(isAuthenticated, 'user')
         localStorage.setItem('id', isAuthenticated.id)
+        localStorage.setItem('name', isAuthenticated.title)
         setAuth(!!isAuthenticated);
     };
 
-    const checkAdmin = (login, password) => {
-        setAdmin(login === "admin01" && password === "Vfrcvfrc123!45!");
-    };
+
 
     useEffect(() => {
         fetch("/xml.xml")
@@ -58,15 +53,13 @@ const App = () => {
                 setItems(xml.schedule.events.event.map(item => {
                     let data2 = item.startDate._text.split(' ')[0].split('/')
                     let time2 = (convertTime12to24(item.startDate._text.split(' ')[1] + ' ' + item.startDate._text.split(' ')[2])).split(':')
-                    const trueData2 = new Date(data2[2], data2[0]-1, data2[1], time2[0], time2[1]).getTime()
-                    const diff = Math.ceil(((trueData - trueData2) / (1000 * 3600 * 24))*24*10)
+                    const trueData2 = new Date(data2[2], data2[0] - 1, data2[1], time2[0], time2[1]).getTime()
+                    const diff = Math.ceil(((trueData - trueData2) / (1000 * 3600 * 24)) * 24 * 10)
                     if (diff > 21) {
                         return undefined
-                    }
-                    else if (diff > 0) {
+                    } else if (diff > 0) {
                         return {...item, live: true}
-                    }
-                    else return item
+                    } else return item
                 }).filter(a => !!a))
             })
             .catch(err => console.log(err));
@@ -79,21 +72,19 @@ const App = () => {
             setItems(items.map(item => {
                 let data2 = item.startDate._text.split(' ')[0].split('/')
                 let time2 = (convertTime12to24(item.startDate._text.split(' ')[1] + ' ' + item.startDate._text.split(' ')[2])).split(':')
-                const trueData2 = new Date(data2[2], data2[0]-1, data2[1], time2[0], time2[1]).getTime()
-                const diff = Math.ceil(((trueData - trueData2) / (1000 * 3600 * 24))*24*10)
+                const trueData2 = new Date(data2[2], data2[0] - 1, data2[1], time2[0], time2[1]).getTime()
+                const diff = Math.ceil(((trueData - trueData2) / (1000 * 3600 * 24)) * 24 * 10)
                 if (diff > 21) {
                     return undefined
-                }
-                else if (diff > 0) {
+                } else if (diff > 0) {
                     return {...item, live: true}
-                }
-                else return item
+                } else return item
             }).filter(a => !!a))
         }
     }, [])
 
     useEffect(() => {
-        fetch(`http://localhost:3000/minutes/${localStorage.getItem('id')}`)
+        fetch(`https://gemetalkued.beget.app/minutes/${localStorage.getItem('id')}`)
             .then(res => res.text())
             .then(data => {
                 console.log(data)
@@ -104,19 +95,26 @@ const App = () => {
 
     return (
         <>
-            <Header check={check}/>
-            {auth ? <>
-                {
-                    items[0] ? items.map(e => <Item key={e.eventId._text} item={e}/>) : <div></div>
-                }
-            </> : <AuthForm checkLogin={checkLogin}/>}
-            {clicked ? (
-                admin ? (
-                    <AdminPanel/>
-                ) : (
-                    <AuthAdmin checkAdmin={checkAdmin}/>
-                )
-            ) : null}
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                progressStyle={{
+                    color: 'red',
+                }}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover={false}
+                theme="dark"
+            />
+            <Header />
+            {auth ?
+                <Content  items={items} min={min}/>
+                :
+                <AuthForm checkLogin={checkLogin}/>}
         </>
     );
 };

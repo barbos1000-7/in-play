@@ -15,7 +15,7 @@ const AuthForm = ({ checkLogin }) => {
   return (
     <div className={style.block}>
       <form className={style.form} onSubmit={handleLogin}>
-        <h2>Scaut System TV</h2>
+        <h2>InPlay TV</h2>
         <div>
           <h3>Логин:</h3>
           <input

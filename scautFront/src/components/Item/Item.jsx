@@ -29,7 +29,6 @@ const Item = ({item}) => {
 
         return `${hours}:${minutes}`;
     }
-    console.log(item)
     return (
         <>
             <li className={style.item}>
@@ -37,16 +36,16 @@ const Item = ({item}) => {
                 <div>{item.sport._text}</div>
                 <div
                     className={style.live}>{item.startDate._text.split(' ')[0] + ' ' + convertTime12to24(item.startDate._text.split(' ')[1] + ' ' + item.startDate._text.split(' ')[2])}
-                    <span style={{color: 'blue', marginLeft: '15px'}}>{item.live && 'live'}</span>
+                    <span style={{color: 'rgb(253, 82, 74)', marginLeft: '15px'}}>{item.live && 'live'}</span>
 
                 </div>
-                <button className={style.btn} onClick={openModal}>
+                {item.live?<button className={style.btn} onClick={openModal}>
                     Play
-                </button>
+                </button> : <div  className={style.identif}> </div>}
             </li>
             {isModalOpen && <Modal isOpen={isModalOpen} onClose={closeModal}>
                 <Video url={item.rtmpLink._text}/>
-                {/*<video src='http://localhost:3000/movies.m3u8' />*/}
+                {/*<video src='https://gemetalkued.beget.app/movies.m3u8' />*/}
             </Modal>}
         </>
     );
